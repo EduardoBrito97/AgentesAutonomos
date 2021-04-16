@@ -4,6 +4,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 
 import random
 import math
+import logging
 
 import sc2
 from Trabalhadores import Trabalhadores
@@ -11,7 +12,6 @@ from Oraculo import Oraculo
 from Soldados import Soldados
 from Observadores import Observadores
 from sc2 import Race, Difficulty
-from sc2.constants import *
 from sc2.player import Bot, Computer
 
 class ProtossBot(sc2.BotAI):
@@ -42,7 +42,7 @@ class ProtossBot(sc2.BotAI):
             await self.soldados.do_work()
 
         except Exception as e:
-            print("Error: " + str(e))
+            logging.error("Error: " + str(e))
 
 def main():
     sc2.run_game(

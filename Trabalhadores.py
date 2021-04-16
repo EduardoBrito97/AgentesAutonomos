@@ -49,7 +49,8 @@ class Trabalhadores():
     async def do_work(self, iteration):
         bot = self.bot
 
-        await bot.distribute_workers(iteration)
+        if iteration % 10 == 0:
+            await self.bot.distribute_workers()
 
         # Foco em produzir assimilator perto de todos os nexus
         await self.build_gas_assimilators()
