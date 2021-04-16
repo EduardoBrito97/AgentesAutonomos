@@ -73,13 +73,15 @@ class Trabalhadores():
         # Em seguida, criamos a Forge pra fazer os upgrades
         if gateways_or_warp_gate_units_ready >= 2 and not bot.units(FORGE):
             await self.build_structure(FORGE)
+            return
 
-        # # Criando a Stargate para a Mothership Core
-        # if self.units(CYBERNETICSCORE).ready.exists and not self.units(STARGATE):
-        #     await self.build_structure(STARGATE)
+        # Criando a Stargate para a Mothership Core
+        if self.units(CYBERNETICSCORE).ready.exists and not self.units(STARGATE):
+            await self.build_structure(STARGATE)
+            return
 
-        # # Criando a Fleet Beacon para a Mothership Core
-        # if self.units(STARGATE).ready.exists and not self.units(FLEETBEACON):
-        #     await self.build_structure(FLEETBEACON)
+        # Criando a Fleet Beacon para a Mothership Core
+        if self.units(STARGATE).ready.exists and not self.units(FLEETBEACON):
+            await self.build_structure(FLEETBEACON)
 
         

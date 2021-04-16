@@ -13,7 +13,7 @@ class Soldados():
                 has_targets = self.bot.cached_known_enemy_units or self.bot.cached_known_enemy_structures
                 if has_targets:
                     targets = (self.bot.cached_known_enemy_units | self.bot.cached_known_enemy_structures).filter(lambda unit: unit.can_be_attacked)
-                    target = targets.closest_to(zealot)
+                    target = targets.closest_to(soldier)
                     await self.attack(soldier, target)
                 else:
                     await self.attack(soldier, self.bot.enemy_start_locations[0])
