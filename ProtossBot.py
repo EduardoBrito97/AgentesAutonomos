@@ -39,7 +39,7 @@ class ProtossBot(sc2.BotAI):
             await self.oraculo.do_work()
             await self.observadores.do_work()
             await self.trabalhadores.do_work(iteration)
-            await self.soldados.do_work()
+            await self.soldados.do_work(iteration)
 
         except Exception as e:
             logging.error("Error: " + str(e))
@@ -47,7 +47,7 @@ class ProtossBot(sc2.BotAI):
 def main():
     sc2.run_game(
         sc2.maps.get("AcropolisLE"),
-        [Bot(Race.Protoss, ProtossBot(), name="Botzada"), Computer(Race.Protoss, Difficulty.Medium)],
+        [Bot(Race.Protoss, ProtossBot(), name="Botzada"), Computer(Race.Protoss, Difficulty.Hard)],
         realtime=False,
     )
 

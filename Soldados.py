@@ -24,7 +24,7 @@ class Soldados():
             position_to_stand = closest_nexus.position.towards(self.bot.enemy_start_locations[0], 16)
             await self.attack(soldier, position_to_stand)
 
-    async def do_work(self):
+    async def do_work(self, iteration):
         bot = self.bot
 
         army_ready = (bot.units(STALKER).ready.amount >= 5 and bot.units(ZEALOT).ready.amount >= 5) or bot.units(ZEALOT).ready.amount > 10
@@ -34,6 +34,8 @@ class Soldados():
         if army_ready and updates_ready:
             await self.move_and_attack(ZEALOT)
             await self.move_and_attack(STALKER)
-        else:
+            await self.move_and_attack(MOTHERSHIP)
+        elif iteration % 10 == 0:
             await self.defend(ZEALOT)
             await self.defend(STALKER)
+            await self.defend(MOTHERSHIP)
