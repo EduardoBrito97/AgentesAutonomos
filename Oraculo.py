@@ -5,6 +5,7 @@ class Oraculo():
     def __init__(self, protoss_bot):
         self.bot = protoss_bot
         self.warpgate_started = False
+        self.mothership_available = False
         self.upgrades = []
 
     async def train_unit(self, unit, structure):
@@ -60,23 +61,28 @@ class Oraculo():
             await self.morph_gateways()
 
         # Fazendo os upgrades da Forge
-        if await self.make_research(FORGERESEARCH_PROTOSSGROUNDWEAPONSLEVEL1, FORGE):
+        if not self.mothership_available and await self.make_research(FORGERESEARCH_PROTOSSGROUNDWEAPONSLEVEL1, FORGE):
             return
         
-        if await self.make_research(FORGERESEARCH_PROTOSSGROUNDARMORLEVEL1, FORGE):
+        if not self.mothership_available and await self.make_research(FORGERESEARCH_PROTOSSGROUNDARMORLEVEL1, FORGE):
             return
         
-        if await self.make_research(FORGERESEARCH_PROTOSSSHIELDSLEVEL1, FORGE):
+        if not self.mothership_available and await self.make_research(FORGERESEARCH_PROTOSSSHIELDSLEVEL1, FORGE):
             return
+
+        # Guardando recursos de gas para a Mothership
+        if bot.units(FLEETBEACON).ready.exists and not bot.units(MOTHERSHIP) and not bot.already_pending(MOTHERSHIP):
+            self.mothership_available = True
 
         # Criando a Mothership
         if bot.units(FLEETBEACON).ready.exists and bot.can_afford(MOTHERSHIP) and not bot.units(MOTHERSHIP) and not bot.already_pending(MOTHERSHIP):
             await bot.do(nexus.train(MOTHERSHIP))
+            self.mothership_available = False
 
         gateways_or_warp_gate_units_ready = bot.units(GATEWAY).ready.amount + bot.units(WARPGATE).ready.amount
         
-        # Damos prioridade aos Stalkers que são mais fortes, mas custam mais
-        if gateways_or_warp_gate_units_ready >= 2 and bot.units(STALKER).ready.amount <= 5 and self.warpgate_started:
+        # Damos prioridade aos Stalkers que são mais fortes, mas custam mais, porém, caso pudermos construir a Mothership, dar prioridade a ela
+        if gateways_or_warp_gate_units_ready >= 2 and bot.units(STALKER).ready.amount <= 5 and self.warpgate_started and not self.mothership_available:
             await self.train_unit(STALKER, GATEWAY)
             await self.warp_unit(STALKER, WARPGATE)
 

@@ -24,14 +24,16 @@ class Soldados():
             position_to_stand = closest_nexus.position.towards(self.bot.enemy_start_locations[0], 16)
             await self.attack(soldier, position_to_stand)
 
-    async def do_work(self, iteration):
+    async def should_attack(self):
         bot = self.bot
-
         army_ready = (bot.units(STALKER).ready.amount >= 5 and bot.units(ZEALOT).ready.amount >= 5) or bot.units(ZEALOT).ready.amount > 10
+        army_ready = army_ready and bot.units(MOTHERSHIP).ready.amount >= 1
         updates_ready = await bot.has_upgrade(FORGERESEARCH_PROTOSSGROUNDWEAPONSLEVEL1) and await bot.has_upgrade(FORGERESEARCH_PROTOSSGROUNDARMORLEVEL1) and await bot.has_upgrade(FORGERESEARCH_PROTOSSSHIELDSLEVEL1)
-        
+        return updates_ready and army_ready
+
+    async def do_work(self, iteration):
         # Atacando caso o batalhão esteja pronto, defendendo caso contrário
-        if army_ready and updates_ready:
+        if await self.should_attack():
             await self.move_and_attack(ZEALOT)
             await self.move_and_attack(STALKER)
             await self.move_and_attack(MOTHERSHIP)
