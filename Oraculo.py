@@ -61,8 +61,8 @@ class Oraculo():
             return
 
         # Criando a Mothership
-        if self.units(FLEETBEACON).ready.exists and self.can_afford(MOTHERSHIPCORE) and not self.units(MOTHERSHIPCORE):
-            await self.do(nexus.train(MOTHERSHIPCORE))
+        if bot.units(FLEETBEACON).ready.exists and bot.can_afford(MOTHERSHIPCORE) and not bot.units(MOTHERSHIPCORE):
+            await bot.do(nexus.train(MOTHERSHIPCORE))
 
         gateways_or_warp_gate_units_ready = bot.units(GATEWAY).ready.amount + bot.units(WARPGATE).ready.amount
         

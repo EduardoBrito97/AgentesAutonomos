@@ -76,12 +76,12 @@ class Trabalhadores():
             return
 
         # Criando a Stargate para a Mothership Core
-        if self.units(CYBERNETICSCORE).ready.exists and not self.units(STARGATE):
+        if bot.units(CYBERNETICSCORE).ready.exists and not bot.units(STARGATE):
             await self.build_structure(STARGATE)
             return
 
         # Criando a Fleet Beacon para a Mothership Core
-        if self.units(STARGATE).ready.exists and not self.units(FLEETBEACON):
+        if bot.units(STARGATE).ready.exists and not bot.units(FLEETBEACON):
             await self.build_structure(FLEETBEACON)
 
         
