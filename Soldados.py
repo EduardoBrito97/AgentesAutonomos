@@ -31,7 +31,7 @@ class Soldados():
     async def should_attack(self):
         bot = self.bot
         army_ready = (bot.units(STALKER).ready.amount >= 5 and bot.units(ZEALOT).ready.amount >= 5) or bot.units(ZEALOT).ready.amount > 10
-        #army_ready = army_ready and bot.units(MOTHERSHIP).ready.amount >= 1
+        army_ready = army_ready and bot.units(MOTHERSHIP).ready.amount >= 1
         updates_ready = await bot.has_upgrade(FORGERESEARCH_PROTOSSGROUNDWEAPONSLEVEL1) and await bot.has_upgrade(FORGERESEARCH_PROTOSSGROUNDARMORLEVEL1) and await bot.has_upgrade(FORGERESEARCH_PROTOSSSHIELDSLEVEL1)
         return updates_ready and army_ready
 
