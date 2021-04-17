@@ -21,6 +21,7 @@ class ProtossBot(sc2.BotAI):
         self.soldados = Soldados(self)
         self.observadores = Observadores(self)
         self.attack_in_course = False
+        self.save_gas = False
 
     async def has_ability(self, ability, unit):
         abilities = await self.get_available_abilities(unit)
@@ -37,6 +38,9 @@ class ProtossBot(sc2.BotAI):
 
     async def retreat(self):
         self.attack_in_course = False
+
+    async def set_save_gas(self, save_gas):
+        self.save_gas = save_gas
 
     async def on_step(self, iteration):
         if iteration == 0:

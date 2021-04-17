@@ -45,6 +45,8 @@ class Trabalhadores():
             pylon = self.bot.units(PYLON).ready.random
             if pylon and self.bot.can_afford(structure):
                 await self.bot.build(structure, near = pylon.position.towards(self.bot.game_info.map_center, int_rand))
+                return True
+        return False
 
     async def build_proxy_pylon(self):
         enemy_location = self.bot.enemy_start_locations[0]
@@ -92,6 +94,13 @@ class Trabalhadores():
         # Em seguida, partimos para criar um Cybernetics Core
         if gateways_or_warp_gate_units_ready >= 2 and not bot.units(CYBERNETICSCORE):
             await self.build_structure(CYBERNETICSCORE)
+            return
+
+        # Criando o Robotics Facility para criar Observers. Guardamos Gas até conseguir produzir
+        if bot.units(CYBERNETICSCORE).ready and not bot.units(ROBOTICSFACILITY):
+            await self.bot.set_save_gas(True)
+            if await self.build_structure(ROBOTICSFACILITY):
+                await self.bot.set_save_gas(False)
             return
         
         # Em seguida, criamos a Forge pra fazer os upgrades
