@@ -1,4 +1,27 @@
 # Agentes Autonomos - II Unidade - StarCraft II
+* Oraculo.py = responsável por treinamentos (train()), transdobras (warp_in()) e pesquisas (upgrade)
+* Trabalhadores.py = responsável por construções (build()) e captação de recursos (gather()/distribute_workers())
+* Soldados.py = responsável por ataque e defesa
+* Observadores.py = reponsável por controlar os Observers (scouts)
+* ProtossBot.py = script principal para rodar o bot
+
+## Estratégia
+* Estruturas
+    1. Construir 4 Gateways
+    2. Enquanto constrói os Gateways, construir um Cybernetics Core
+    3. Usar o Cybernatics Core para fazer a pesquisa para disponibilizar o Warp Gate
+    4. Transdobrar os Gateways em Warp Gates
+    5. Construir 1 Forge
+    6. Realizar as pesquisas de nível 1 da Forge
+    7. Enquanto faz as pesquisas, constrói Stargate
+    8. Após o Stargate, constrói Fleetbeacon
+* Tropas
+    1. Produzir Probes até completar o máximo de 16 do Nexus
+    2. Usar os Probes para coletar recursos, focando em Minerals no começo e Gas no meio termo
+    3. Transdobrar Zealots e Stalkers assim que possível
+    4. Assim que possível, transdobrar a Mothership
+    5. Atacar se tiver ( (> 5 Zealots e > 5 Stalkers) ou > 10 Zealots) e 1 Mothership e Todas as pesquisas Nv. 1 da Forge
+    6. Ao iniciar o ataque, um Probe vai seguir o batalhão de ataque para construir um Pylon de proxy, onde os Warpgates farão as transdobras para perto desse Pylon, pra melhorar o ataque.
 
 ## Lista 1 - Início
 1. Quais os aspectos mais importantes da mecânica do jogo?
