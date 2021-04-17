@@ -54,7 +54,7 @@ class ProtossBot(sc2.BotAI):
 def main():
     sc2.run_game(
         sc2.maps.get("AcropolisLE"),
-        [Bot(Race.Protoss, ProtossBot(), name="Botzada"), Computer(Race.Protoss, Difficulty.Hard)],
+        [Bot(Race.Protoss, ProtossBot(), name="Botzada"), Computer(Race.Protoss, Difficulty.Harder)],
         realtime=False,
     )
 

@@ -16,7 +16,11 @@ class Oraculo():
     async def warp_unit(self, unit, structure):
         for struct in self.bot.units(structure).ready:
             if await self.bot.has_ability(WARPGATETRAIN_ZEALOT, struct) and self.bot.supply_left >= 2 and self.bot.can_afford(unit):
-                pos = self.bot.units(PYLON).closest_to(self.bot.enemy_start_locations[0]).position.to2.random_on_distance(4)
+                closest_to_unit = self.bot.start_location.position.to2.random_on_distance(4).towards(self.bot.game_info.map_center, 10)
+                if self.bot.attack_in_course:
+                    closest_to_unit = self.bot.enemy_start_locations[0]
+
+                pos = self.bot.units(PYLON).closest_to(closest_to_unit).position.to2.random_on_distance(4)
                 placement = await self.bot.find_placement(WARPGATETRAIN_ZEALOT, pos, placement_step=2)
                 if placement != None:
                     await self.bot.do(struct.warp_in(unit, placement))
