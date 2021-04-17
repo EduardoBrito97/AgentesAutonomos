@@ -20,6 +20,7 @@ class ProtossBot(sc2.BotAI):
         self.trabalhadores = Trabalhadores(self)
         self.soldados = Soldados(self)
         self.observadores = Observadores(self)
+        self.attack_in_course = False
 
     async def has_ability(self, ability, unit):
         abilities = await self.get_available_abilities(unit)
@@ -30,6 +31,12 @@ class ProtossBot(sc2.BotAI):
 
     async def has_upgrade(self, upgrade):
         return upgrade in self.oraculo.upgrades
+
+    async def call_for_attack(self):
+        self.attack_in_course = True
+
+    async def retreat(self):
+        self.attack_in_course = False
 
     async def on_step(self, iteration):
         if iteration == 0:

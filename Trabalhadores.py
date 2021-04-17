@@ -46,11 +46,35 @@ class Trabalhadores():
             if pylon and self.bot.can_afford(structure):
                 await self.bot.build(structure, near = pylon.position.towards(self.bot.game_info.map_center, int_rand))
 
+    async def build_proxy_pylon(self):
+        enemy_location = self.bot.enemy_start_locations[0]
+        proxy_built = False
+
+        if self.bot.units(PYLON).ready:
+            pylon_closest_to_enemy = self.bot.units(PYLON).closest_to(enemy_location)
+            distance_to_enemy = pylon_closest_to_enemy.distance_to(enemy_location)
+            if distance_to_enemy <= 50:
+                proxy_built = True
+
+        if self.bot.units(PROBE).ready and not proxy_built:
+            worker = self.bot.units(PROBE).ready.closest_to(enemy_location)
+            distance_to_enemy = worker.distance_to(enemy_location)
+            soldier_to_follow = (self.bot.units(ZEALOT).ready | self.bot.units(STALKER).ready).closest_to(enemy_location)
+
+            if distance_to_enemy <= 70 and self.bot.can_afford(PYLON):
+                await self.bot.build(PYLON, near = worker.position)
+            else:
+                await self.bot.do(worker.move(soldier_to_follow.position.towards(self.bot.start_location, 9)))
+
     async def do_work(self, iteration):
         bot = self.bot
 
         if iteration % 10 == 0:
             await self.bot.distribute_workers()
+
+        # Caso a gente já tenha começado o ataque, criar um Pylon pra gente conseguir produzir unidade perto do inimigo
+        if bot.attack_in_course:
+            await self.build_proxy_pylon()
 
         # Foco em produzir assimilator perto de todos os nexus
         await self.build_gas_assimilators()

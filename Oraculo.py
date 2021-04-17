@@ -16,9 +16,10 @@ class Oraculo():
     async def warp_unit(self, unit, structure):
         for struct in self.bot.units(structure).ready:
             if await self.bot.has_ability(WARPGATETRAIN_ZEALOT, struct) and self.bot.supply_left >= 2 and self.bot.can_afford(unit):
-                pos = struct.position.to2.random_on_distance(4)
-                placement = await self.bot.find_placement(WARPGATETRAIN_ZEALOT, pos, placement_step=2, )
-                await self.bot.do(struct.warp_in(unit, placement))
+                pos = self.bot.units(PYLON).closest_to(self.bot.enemy_start_locations[0]).position.to2.random_on_distance(4)
+                placement = await self.bot.find_placement(WARPGATETRAIN_ZEALOT, pos, placement_step=2)
+                if placement != None:
+                    await self.bot.do(struct.warp_in(unit, placement))
 
     async def make_research(self, research, structure):
         if self.bot.units(structure).ready:
