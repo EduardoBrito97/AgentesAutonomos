@@ -20,8 +20,14 @@ class Soldados():
     
     async def defend(self, unit_type):
         for soldier in self.bot.units(unit_type).ready:
-            closest_nexus = self.bot.units(NEXUS).ready.closest_to(self.bot.enemy_start_locations[0])
-            position_to_stand = closest_nexus.position.towards(self.bot.game_info.map_center, 6)
+            nexus_amount = self.bot.units(NEXUS).amount
+            
+            closest_nexus = self.bot.units(NEXUS).closest_to(self.bot.enemy_start_locations[0])
+            position_to_stand = closest_nexus.position.towards(self.bot.game_info.map_center, 8)
+            
+            if nexus_amount > 2:
+                position_to_stand = closest_nexus.position.towards(self.bot.start_location, 8)
+
             await self.attack(soldier, position_to_stand)
         await self.bot.retreat()
 
@@ -38,12 +44,13 @@ class Soldados():
 
     async def should_attack(self):
         bot = self.bot
-        army_ready = (bot.units(STALKER).ready.amount >= 10 and bot.units(ZEALOT).ready.amount >= 10) or bot.units(ZEALOT).ready.amount > 20
+        army_ready = (bot.units(STALKER).ready.amount >= 20 and bot.units(ZEALOT).ready.amount >= 20) or bot.units(ZEALOT).ready.amount > 40
         army_ready = army_ready and bot.units(MOTHERSHIP).ready.amount >= 1
 
         # Ter pelo menos todas as pequisas de lv 1 e a de dano de lv 2
         updates_ready = (await bot.has_upgrade(FORGERESEARCH_PROTOSSGROUNDWEAPONSLEVEL2) 
-                            and await bot.has_upgrade(FORGERESEARCH_PROTOSSGROUNDARMORLEVEL2))
+                            and await bot.has_upgrade(FORGERESEARCH_PROTOSSGROUNDARMORLEVEL2)
+                            and await bot.has_upgrade(FORGERESEARCH_PROTOSSSHIELDSLEVEL2))
 
         # Caso a gente tenha começado o ataque, ir até o fim (ou quse isso)
         focus_on_attack = bot.units(STALKER).ready.amount > 0 and bot.units(ZEALOT).ready.amount > 0 and self.bot.attack_in_course

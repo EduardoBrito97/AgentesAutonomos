@@ -99,13 +99,6 @@ class Trabalhadores():
         if gateways_or_warp_gate_units_ready >= 2 and not bot.units(CYBERNETICSCORE):
             await self.build_structure(CYBERNETICSCORE)
             return
-
-        # Criando o Robotics Facility para criar Observers. Guardamos Gas até conseguir produzir
-        # if bot.units(CYBERNETICSCORE).ready and not bot.units(ROBOTICSFACILITY):
-        #     await self.bot.set_save_gas(True)
-        #     if await self.build_structure(ROBOTICSFACILITY):
-        #         await self.bot.set_save_gas(False)
-        #     return
         
         # Em seguida, criamos a Forge pra fazer os upgrades
         if gateways_or_warp_gate_units_ready >= 2 and not bot.units(FORGE):
@@ -140,7 +133,15 @@ class Trabalhadores():
         # Agora construimos mais alguns Gateways para podermos produzir mais tropas
         if gateways_or_warp_gate_units < 7 and bot.units(PYLON).ready.amount > 0 :
             await self.build_structure(GATEWAY)
+            return
 
+        # Por fim, precisamos de defesas
+        if gateways_or_warp_gate_units_ready >= 7 and bot.units(PHOTONCANNON).ready.amount < 3 and not bot.already_pending(PHOTONCANNON):
+            nexus = bot.units(NEXUS).closest_to(bot.enemy_start_locations[0])
+            if nexus and bot.can_afford(PHOTONCANNON):
+                await bot.build(PHOTONCANNON, near = nexus.position.towards_with_random_angle(bot.game_info.map_center, 8).to2.random_on_distance(4))
+                return
 
-
-        
+        # Depois de construir tudo, a gente precisa de mais população
+        if bot.supply_left < 8 and bot.units(PYLON).amount - bot.units(PYLON).ready.amount < 3 and bot.units(PHOTONCANNON).ready.amount >= 3:
+            await self.build_structure(PYLON)

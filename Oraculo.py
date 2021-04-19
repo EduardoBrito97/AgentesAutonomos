@@ -25,9 +25,10 @@ class Oraculo():
                     await self.bot.do(struct.warp_in(unit, placement))
 
     async def make_research(self, research, structure):
-        if self.bot.units(structure).ready:
-            struct = self.bot.units(structure).ready.first
-            if self.bot.can_afford(research) and not research in self.upgrades and struct.is_idle:
+        for struct in self.bot.units(structure).ready:
+            if not self.bot.can_afford(research) or research in self.upgrades:
+                break 
+            elif self.bot.can_afford(research) and not research in self.upgrades and struct.is_idle:
                 self.upgrades.append(research)
                 await self.bot.do(struct(research))
                 return True
