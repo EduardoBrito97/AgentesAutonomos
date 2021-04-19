@@ -21,7 +21,6 @@ class Trabalhadores():
     
     async def build_pylons(self):
         bot = self.bot
-        nexus = bot.units(NEXUS).random
 
         amount_of_structures = bot.units(GATEWAY).amount + bot.units(CYBERNETICSCORE).amount + bot.units(FLEETBEACON).amount + bot.units(STARGATE).amount
        
@@ -34,20 +33,36 @@ class Trabalhadores():
         # Por fim, analisamos se é possível construir um Pylon (ou se já temos algum em construção)
         should_create_pylon = should_create_pylon and not bot.already_pending(PYLON) and bot.can_afford(PYLON)
 
-        pos = nexus.position.towards_with_random_angle(bot.game_info.map_center, 8)
-        placement = await self.bot.find_placement(PYLON, near = pos, random_alternative = False, placement_step = 1)
-        if placement and should_create_pylon:
-            await bot.build(PYLON, near = placement.position)
+        pos = await self.find_place_to_build(PYLON)
+        closest_structure_distance = self.bot.units.filter(lambda u: u.is_structure).closest_to(pos).distance_to(pos)
+        if should_create_pylon and closest_structure_distance > 3:
+            await bot.build(PYLON, near = pos)
+
+    async def find_place_to_build(self, structure_to_build):
+        structure = self.bot.units(NEXUS).random
+        if self.bot.units(PYLON).ready and structure_to_build != PYLON:
+            structure = self.bot.units.filter(lambda unit: unit.is_structure).random
+
+        amount_of_structures = self.bot.units.filter(lambda unit: unit.is_structure).amount
+
+        rand_num = random.randint(4, 4 + amount_of_structures % 10)
+
+        if amount_of_structures % 3 == 0:
+            target = self.bot.game_info.map_center
+        elif amount_of_structures % 3 == 1:
+            target = self.bot.start_location
+        else:
+            target = self.bot.enemy_start_locations[0]
+
+        return structure.position.towards_with_random_angle(target, rand_num)
 
     async def build_structure(self, structure):
         if not self.bot.already_pending(structure):
-            pylon = self.bot.units(PYLON).ready.random
-            if pylon and self.bot.can_afford(structure):
-                pos = pylon.position.towards_with_random_angle(self.bot.game_info.map_center, 8)
-                placement = await self.bot.find_placement(structure, near = pos, random_alternative = False, placement_step = 1)
-                if placement:
-                    await self.bot.build(structure, near = placement.position)
-                    return True
+            pos = await self.find_place_to_build(structure)
+            closest_structure_distance = self.bot.units.filter(lambda u: u.is_structure).closest_to(pos).distance_to(pos)
+            if self.bot.can_afford(structure) and closest_structure_distance > 3:
+                await self.bot.build(structure, near = pos)
+                return True
         return False
 
     async def build_proxy_pylon(self):
