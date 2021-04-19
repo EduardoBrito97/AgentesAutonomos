@@ -39,14 +39,11 @@ class Oraculo():
             if MORPH_WARPGATE in abilities and self.bot.can_afford(MORPH_WARPGATE):
                 await self.bot.do(gateway(MORPH_WARPGATE))
 
-    async def do_nothing(self):
-        return 1
-
     async def do_work(self):
         bot = self.bot
         
         nexus = bot.units(NEXUS).ready.random
-        
+
         # Se a gente não possui nenhum Nexus, ataque suicida
         if not self.bot.units(NEXUS).ready.exists:
             for worker in self.workers:
@@ -77,6 +74,16 @@ class Oraculo():
         if not self.bot.save_gas and await self.make_research(FORGERESEARCH_PROTOSSSHIELDSLEVEL1, FORGE):
             return
 
+        # Fazendo os upgrades lv 2 da Forge
+        if not self.bot.save_gas and self.bot.units(TWILIGHTCOUNCIL).ready and await self.make_research(FORGERESEARCH_PROTOSSGROUNDWEAPONSLEVEL2, FORGE):
+            return
+        
+        if not self.bot.save_gas and self.bot.units(TWILIGHTCOUNCIL).ready and await self.make_research(FORGERESEARCH_PROTOSSGROUNDARMORLEVEL2, FORGE):
+            return
+        
+        if not self.bot.save_gas and self.bot.units(TWILIGHTCOUNCIL).ready and await self.make_research(FORGERESEARCH_PROTOSSSHIELDSLEVEL2, FORGE):
+            return
+
         # Guardando recursos de gas para a Mothership
         if bot.units(FLEETBEACON).ready.exists and not bot.units(MOTHERSHIP) and not bot.already_pending(MOTHERSHIP):
             await self.bot.set_save_gas(True)
@@ -85,10 +92,6 @@ class Oraculo():
         if bot.units(FLEETBEACON).ready.exists and bot.can_afford(MOTHERSHIP) and not bot.units(MOTHERSHIP) and not bot.already_pending(MOTHERSHIP):
             await bot.do(nexus.train(MOTHERSHIP))
             await self.bot.set_save_gas(False)
-
-        # Criando Observers para explorar
-        if bot.units(ROBOTICSFACILITY).ready and bot.units(OBSERVER).ready.amount < 2:
-            await self.train_unit(OBSERVER, ROBOTICSFACILITY)
 
         gateways_or_warp_gate_units_ready = bot.units(GATEWAY).ready.amount + bot.units(WARPGATE).ready.amount
         # Damos prioridade aos Stalkers que são mais fortes, mas custam mais, porém, caso pudermos construir a Mothership, dar prioridade a ela

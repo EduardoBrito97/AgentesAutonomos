@@ -63,7 +63,7 @@ class Trabalhadores():
             distance_to_enemy = worker.distance_to(enemy_location)
             soldier_to_follow = (self.bot.units(ZEALOT).ready | self.bot.units(STALKER).ready).closest_to(enemy_location)
 
-            if distance_to_enemy <= 70 and self.bot.can_afford(PYLON):
+            if distance_to_enemy <= 70 and self.bot.can_afford(PYLON) and not self.bot.already_pending(PYLON):
                 await self.bot.build(PYLON, near = worker.position)
             else:
                 await self.bot.do(worker.move(soldier_to_follow.position.towards(self.bot.start_location, 9)))
@@ -79,7 +79,7 @@ class Trabalhadores():
             await bot.expand_now()
 
         # Caso a gente já tenha começado o ataque, criar um Pylon pra gente conseguir produzir unidade perto do inimigo
-        if bot.attack_in_course:
+        if bot.attack_in_course and iteration % 5:
             await self.build_proxy_pylon()
 
         # Foco em produzir assimilator perto de todos os nexus
@@ -111,6 +111,11 @@ class Trabalhadores():
         if gateways_or_warp_gate_units_ready >= 2 and not bot.units(FORGE):
             await self.build_structure(FORGE)
             return
+        
+        lv_updates_ready = await bot.has_upgrade(FORGERESEARCH_PROTOSSGROUNDWEAPONSLEVEL1) and await bot.has_upgrade(FORGERESEARCH_PROTOSSGROUNDARMORLEVEL1) and await bot.has_upgrade(FORGERESEARCH_PROTOSSSHIELDSLEVEL1)
+        if bot.units(FORGE).ready and not bot.units(TWILIGHTCOUNCIL) and not bot.already_pending(TWILIGHTCOUNCIL) and lv_updates_ready:
+            await self.build_structure(TWILIGHTCOUNCIL)
+            return
 
         # Criando a Stargate para a Mothership
         if bot.units(CYBERNETICSCORE).ready.exists and not bot.units(STARGATE):
@@ -121,9 +126,21 @@ class Trabalhadores():
         if bot.units(STARGATE).ready.exists and not bot.units(FLEETBEACON):
             await self.build_structure(FLEETBEACON)
             return
-
-        # Agora construimos mais alguns para podermos produzir mais tropas
+        # Agora construimos mais alguns Gateways para podermos produzir mais tropas
         if gateways_or_warp_gate_units < 5 and bot.units(PYLON).ready.amount > 0 :
             await self.build_structure(GATEWAY)
+            return
+
+        # Depois de construir TUDO, a gente expande pra poder pegar mais recurso
+        # Precisamos expandir pra ter pelo menos dois nexus
+        if bot.townhalls.ready.amount + bot.already_pending(NEXUS) < 3 and bot.can_afford(NEXUS):
+            await bot.expand_now()
+            return
+
+        # Agora construimos mais alguns Gateways para podermos produzir mais tropas
+        if gateways_or_warp_gate_units < 7 and bot.units(PYLON).ready.amount > 0 :
+            await self.build_structure(GATEWAY)
+
+
 
         

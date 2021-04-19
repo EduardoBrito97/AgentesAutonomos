@@ -10,7 +10,6 @@ import sc2
 from Trabalhadores import Trabalhadores
 from Oraculo import Oraculo
 from Soldados import Soldados
-from Observadores import Observadores
 from sc2 import Race, Difficulty
 from sc2.player import Bot, Computer
 
@@ -19,7 +18,6 @@ class ProtossBot(sc2.BotAI):
         self.oraculo = Oraculo(self)
         self.trabalhadores = Trabalhadores(self)
         self.soldados = Soldados(self)
-        self.observadores = Observadores(self)
         self.attack_in_course = False
         self.save_gas = False
 
@@ -48,7 +46,6 @@ class ProtossBot(sc2.BotAI):
 
         try:
             await self.oraculo.do_work()
-            await self.observadores.do_work()
             await self.trabalhadores.do_work(iteration)
             await self.soldados.do_work(iteration)
 
@@ -58,7 +55,7 @@ class ProtossBot(sc2.BotAI):
 def main():
     sc2.run_game(
         sc2.maps.get("AcropolisLE"),
-        [Bot(Race.Protoss, ProtossBot(), name="Botzada"), Computer(Race.Protoss, Difficulty.Hard)],
+        [Bot(Race.Protoss, ProtossBot(), name="Botzada"), Computer(Race.Protoss, Difficulty.VeryHard)],
         realtime=False,
     )
 
