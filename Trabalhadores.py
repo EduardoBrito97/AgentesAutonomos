@@ -88,8 +88,10 @@ class Trabalhadores():
     async def do_work(self, iteration):
         bot = self.bot
 
-        if iteration % 20 == 0:
+        if iteration % 20 == 0 and self.bot.vespene < 400:
             await self.bot.distribute_workers()
+        elif iteration % 20 == 0:
+            await self.bot.distribute_workers(1000)
 
         # Precisamos expandir pra ter pelo menos dois nexus
         if bot.townhalls.ready.amount + bot.already_pending(NEXUS) < 2 and bot.can_afford(NEXUS):
