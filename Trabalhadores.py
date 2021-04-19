@@ -21,13 +21,13 @@ class Trabalhadores():
     
     async def build_pylons(self):
         bot = self.bot
-        nexus = bot.units(NEXUS).ready.random
+        nexus = bot.units(NEXUS).random
         int_rand = random.randint(0, 8)
 
         amount_of_structures = bot.units(GATEWAY).amount + bot.units(CYBERNETICSCORE).amount + bot.units(FLEETBEACON).amount + bot.units(STARGATE).amount
        
         # Precisamos de ao menos 1 Pylon, mas também precisamos de Pylons sempre que não tivermos supplies
-        should_create_pylon = bot.units(PYLON).amount == 0 or bot.supply_left < 2
+        should_create_pylon = bot.units(PYLON).amount == 0 or bot.supply_left < 5
 
         # Precisamos de 1 Pylon pra cada estrutura tbm
         should_create_pylon = should_create_pylon or bot.units(PYLON).amount <= amount_of_structures
@@ -36,15 +36,15 @@ class Trabalhadores():
         should_create_pylon = should_create_pylon and not bot.already_pending(PYLON) and bot.can_afford(PYLON)
 
         if should_create_pylon:
-            await bot.build(PYLON, near = nexus.position.towards(bot.game_info.map_center, int_rand))
+            await bot.build(PYLON, near = nexus.position.towards_with_random_angle(bot.game_info.map_center, 8), placement_step=int_rand)
 
     async def build_structure(self, structure):
-        int_rand = random.randint(0, 8)
+        int_rand = random.randint(0, 5)
 
         if not self.bot.already_pending(structure):
             pylon = self.bot.units(PYLON).ready.random
             if pylon and self.bot.can_afford(structure):
-                await self.bot.build(structure, near = pylon.position.towards(self.bot.game_info.map_center, int_rand))
+                await self.bot.build(structure, near = pylon.position.towards_with_random_angle(self.bot.game_info.map_center, 8), placement_step=int_rand)
                 return True
         return False
 
@@ -55,7 +55,7 @@ class Trabalhadores():
         if self.bot.units(PYLON).ready:
             pylon_closest_to_enemy = self.bot.units(PYLON).closest_to(enemy_location)
             distance_to_enemy = pylon_closest_to_enemy.distance_to(enemy_location)
-            if distance_to_enemy <= 50:
+            if distance_to_enemy <= 80:
                 proxy_built = True
 
         if self.bot.units(PROBE).ready and not proxy_built:
@@ -71,8 +71,12 @@ class Trabalhadores():
     async def do_work(self, iteration):
         bot = self.bot
 
-        if iteration % 10 == 0:
+        if iteration % 20 == 0:
             await self.bot.distribute_workers()
+
+        # Precisamos expandir pra ter pelo menos dois nexus
+        if bot.townhalls.ready.amount + bot.already_pending(NEXUS) < 2 and bot.can_afford(NEXUS):
+            await bot.expand_now()
 
         # Caso a gente já tenha começado o ataque, criar um Pylon pra gente conseguir produzir unidade perto do inimigo
         if bot.attack_in_course:
@@ -85,8 +89,8 @@ class Trabalhadores():
         await self.build_pylons()
         
         gateways_or_warp_gate_units = bot.units(GATEWAY).amount + bot.units(WARPGATE).amount 
-        # Nosso foco é o Gateway, então precisamos construir pelo menos dois
-        if gateways_or_warp_gate_units < 3 and bot.units(PYLON).ready.amount > 0 :
+        # Nosso foco é o Gateway, então precisamos construir pelo menos 2 para começar. Mais tarde construímos mais
+        if gateways_or_warp_gate_units < 2 and bot.units(PYLON).ready.amount > 0 :
             await self.build_structure(GATEWAY)
             return
 
@@ -97,24 +101,29 @@ class Trabalhadores():
             return
 
         # Criando o Robotics Facility para criar Observers. Guardamos Gas até conseguir produzir
-        if bot.units(CYBERNETICSCORE).ready and not bot.units(ROBOTICSFACILITY):
-            await self.bot.set_save_gas(True)
-            if await self.build_structure(ROBOTICSFACILITY):
-                await self.bot.set_save_gas(False)
-            return
+        # if bot.units(CYBERNETICSCORE).ready and not bot.units(ROBOTICSFACILITY):
+        #     await self.bot.set_save_gas(True)
+        #     if await self.build_structure(ROBOTICSFACILITY):
+        #         await self.bot.set_save_gas(False)
+        #     return
         
         # Em seguida, criamos a Forge pra fazer os upgrades
         if gateways_or_warp_gate_units_ready >= 2 and not bot.units(FORGE):
             await self.build_structure(FORGE)
             return
 
-        # Criando a Stargate para a Mothership Core
+        # Criando a Stargate para a Mothership
         if bot.units(CYBERNETICSCORE).ready.exists and not bot.units(STARGATE):
             await self.build_structure(STARGATE)
             return
 
-        # Criando a Fleet Beacon para a Mothership Core
+        # Criando a Fleet Beacon para a Mothership
         if bot.units(STARGATE).ready.exists and not bot.units(FLEETBEACON):
             await self.build_structure(FLEETBEACON)
+            return
+
+        # Agora construimos mais alguns para podermos produzir mais tropas
+        if gateways_or_warp_gate_units < 5 and bot.units(PYLON).ready.amount > 0 :
+            await self.build_structure(GATEWAY)
 
         

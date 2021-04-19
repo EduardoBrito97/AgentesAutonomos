@@ -21,26 +21,38 @@ class Soldados():
     async def defend(self, unit_type):
         for soldier in self.bot.units(unit_type).ready:
             closest_nexus = self.bot.units(NEXUS).ready.closest_to(self.bot.enemy_start_locations[0])
-            position_to_stand = closest_nexus.position.towards(self.bot.enemy_start_locations[0], 16)
+            position_to_stand = closest_nexus.position.towards(self.bot.enemy_start_locations[0], 14)
             await self.attack(soldier, position_to_stand)
         await self.bot.retreat()
 
     async def attack_started(self):
         await self.bot.call_for_attack()
 
+    # A Mothership voa, então precisamos que ela siga a tropa mais próxima, senão ela vai terminar atacando sozinha
+    async def mothership_attack(self):
+        if self.units(MOTHERSHIP).ready:
+            mothership = self.units(MOTHERSHIP).ready.first
+            soldier = (self.units(ZEALOT).ready | self.units(STALKER)).closest_to(mothership)
+            if soldier:
+                await self.attack(mothership, soldier.position)
+
     async def should_attack(self):
         bot = self.bot
-        army_ready = (bot.units(STALKER).ready.amount >= 5 and bot.units(ZEALOT).ready.amount >= 5) or bot.units(ZEALOT).ready.amount > 10
+        army_ready = (bot.units(STALKER).ready.amount >= 10 and bot.units(ZEALOT).ready.amount >= 10) or bot.units(ZEALOT).ready.amount > 20
         army_ready = army_ready and bot.units(MOTHERSHIP).ready.amount >= 1
         updates_ready = await bot.has_upgrade(FORGERESEARCH_PROTOSSGROUNDWEAPONSLEVEL1) and await bot.has_upgrade(FORGERESEARCH_PROTOSSGROUNDARMORLEVEL1) and await bot.has_upgrade(FORGERESEARCH_PROTOSSSHIELDSLEVEL1)
-        return updates_ready and army_ready
+
+        # Caso a gente tenha começado o ataque, ir até o fim (ou quse isso)
+        focus_on_attack = bot.units(STALKER).ready.amount >= 5 and bot.units(ZEALOT).ready.amount >= 5 and self.bot.attack_in_course
+
+        return (updates_ready and army_ready) or focus_on_attack
 
     async def do_work(self, iteration):
         # Atacando caso o batalhão esteja pronto, defendendo caso contrário
         if await self.should_attack():
             await self.move_and_attack(ZEALOT)
             await self.move_and_attack(STALKER)
-            await self.move_and_attack(MOTHERSHIP)
+            await self.mothership_attack()
             await self.attack_started()
         elif iteration % 40 == 0:
             await self.defend(ZEALOT)
