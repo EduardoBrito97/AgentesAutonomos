@@ -1,5 +1,6 @@
 import random
 from sc2.constants import *
+from sc2.data import Alert
 
 class Soldados():
     def __init__(self, protoss_bot):
@@ -21,15 +22,24 @@ class Soldados():
     async def defend(self, unit_type):
         for soldier in self.bot.units(unit_type).ready:
             nexus_amount = self.bot.units(NEXUS).amount
+
+            # A gente dá prioridade a quem está atacando a base da gente
+            if await self.are_we_under_attack(True):
+                position_to_stand = self.bot.known_enemy_units.closest_to(self.bot.start_location).position
+            else:
+                closest_nexus = self.bot.units(NEXUS).closest_to(self.bot.enemy_start_locations[0])
+                position_to_stand = closest_nexus.position.towards(self.bot.game_info.map_center, 8)
             
-            closest_nexus = self.bot.units(NEXUS).closest_to(self.bot.enemy_start_locations[0])
-            position_to_stand = closest_nexus.position.towards(self.bot.game_info.map_center, 8)
-            
-            if nexus_amount > 2:
-                position_to_stand = closest_nexus.position.towards(self.bot.start_location, 8)
+                if nexus_amount > 2:
+                    position_to_stand = closest_nexus.position.towards(self.bot.start_location, 8)
 
             await self.attack(soldier, position_to_stand)
-        await self.bot.retreat()
+
+    async def are_we_under_attack(self, include_units):
+        are_we_under_attack = self.bot.alert(Alert.BuildingUnderAttack) 
+        if include_units:
+            are_we_under_attack = are_we_under_attack or self.bot.alert(Alert.UnitUnderAttack)
+        return are_we_under_attack
 
     async def attack_started(self):
         await self.bot.call_for_attack()
@@ -55,7 +65,8 @@ class Soldados():
         # Caso a gente tenha começado o ataque, ir até o fim (ou quse isso)
         focus_on_attack = bot.units(STALKER).ready.amount > 0 and bot.units(ZEALOT).ready.amount > 0 and self.bot.attack_in_course
 
-        return (updates_ready and army_ready) or focus_on_attack
+        # Temos que dar prioridade a defesa caso nossa base esteja sob ataque
+        return ((updates_ready and army_ready) or focus_on_attack) and await self.are_we_under_attack(False)
 
     async def do_work(self, iteration):
         # Atacando caso o batalhão esteja pronto, defendendo caso contrário
@@ -68,3 +79,4 @@ class Soldados():
             await self.defend(ZEALOT)
             await self.defend(STALKER)
             await self.defend(MOTHERSHIP)
+            await self.bot.retreat()
