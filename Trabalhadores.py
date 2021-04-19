@@ -22,7 +22,6 @@ class Trabalhadores():
     async def build_pylons(self):
         bot = self.bot
         nexus = bot.units(NEXUS).random
-        int_rand = random.randint(0, 8)
 
         amount_of_structures = bot.units(GATEWAY).amount + bot.units(CYBERNETICSCORE).amount + bot.units(FLEETBEACON).amount + bot.units(STARGATE).amount
        
@@ -35,17 +34,20 @@ class Trabalhadores():
         # Por fim, analisamos se é possível construir um Pylon (ou se já temos algum em construção)
         should_create_pylon = should_create_pylon and not bot.already_pending(PYLON) and bot.can_afford(PYLON)
 
-        if should_create_pylon:
-            await bot.build(PYLON, near = nexus.position.towards_with_random_angle(bot.game_info.map_center, 8), placement_step=int_rand)
+        pos = nexus.position.towards_with_random_angle(bot.game_info.map_center, 8)
+        placement = await self.bot.find_placement(PYLON, near = pos, random_alternative = False, placement_step = 1)
+        if placement and should_create_pylon:
+            await bot.build(PYLON, near = placement.position)
 
     async def build_structure(self, structure):
-        int_rand = random.randint(0, 5)
-
         if not self.bot.already_pending(structure):
             pylon = self.bot.units(PYLON).ready.random
             if pylon and self.bot.can_afford(structure):
-                await self.bot.build(structure, near = pylon.position.towards_with_random_angle(self.bot.game_info.map_center, 8), placement_step=int_rand)
-                return True
+                pos = pylon.position.towards_with_random_angle(self.bot.game_info.map_center, 8)
+                placement = await self.bot.find_placement(structure, near = pos, random_alternative = False, placement_step = 1)
+                if placement:
+                    await self.bot.build(structure, near = placement.position)
+                    return True
         return False
 
     async def build_proxy_pylon(self):
@@ -139,9 +141,9 @@ class Trabalhadores():
         if gateways_or_warp_gate_units_ready >= 7 and bot.units(PHOTONCANNON).ready.amount < 3 and not bot.already_pending(PHOTONCANNON):
             nexus = bot.units(NEXUS).closest_to(bot.enemy_start_locations[0])
             if nexus and bot.can_afford(PHOTONCANNON):
-                await bot.build(PHOTONCANNON, near = nexus.position.towards_with_random_angle(bot.game_info.map_center, 8).to2.random_on_distance(4))
+                await bot.build(PHOTONCANNON, near = nexus.position.towards_with_random_angle(bot.enemy_start_locations[0], 6).to2.random_on_distance(4))
                 return
 
         # Depois de construir tudo, a gente precisa de mais população
-        if bot.supply_left < 8 and bot.units(PYLON).amount - bot.units(PYLON).ready.amount < 3 and bot.units(PHOTONCANNON).ready.amount >= 3:
+        if bot.supply_left < 8 and bot.units(PYLON).amount - bot.units(PYLON).ready.amount < 3 and bot.units(PHOTONCANNON).ready.amount >= 3 and bot.supply_cap < 200:
             await self.build_structure(PYLON)

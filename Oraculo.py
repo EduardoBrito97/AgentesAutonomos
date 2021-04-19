@@ -93,16 +93,19 @@ class Oraculo():
         if bot.units(FLEETBEACON).ready.exists and bot.can_afford(MOTHERSHIP) and not bot.units(MOTHERSHIP) and not bot.already_pending(MOTHERSHIP):
             await bot.do(nexus.train(MOTHERSHIP))
             await self.bot.set_save_gas(False)
+            return
 
         gateways_or_warp_gate_units_ready = bot.units(GATEWAY).ready.amount + bot.units(WARPGATE).ready.amount
+        
         # Damos prioridade aos Stalkers que são mais fortes, mas custam mais, porém, caso pudermos construir a Mothership, dar prioridade a ela
-        if gateways_or_warp_gate_units_ready >= 2 and bot.units(STALKER).ready.amount <= 5 and self.warpgate_started and not self.bot.save_gas:
+        if gateways_or_warp_gate_units_ready >= 2 and bot.units(STALKER).ready.amount <= 40 and self.bot.can_afford(STALKER) and self.warpgate_started and not self.bot.save_gas:
             await self.train_unit(STALKER, GATEWAY)
             await self.warp_unit(STALKER, WARPGATE)
+            return
 
         # Já começamos a treinar Zealots, que são a base de nossa armada
         # Como Zealot usa só mineral, pode ser que tenhamos muito mineral e pouco gas
-        should_create_zealot = bot.units(ZEALOT).ready.amount <= 5 or bot.minerals > 550
+        should_create_zealot = bot.units(ZEALOT).ready.amount <= 40 or bot.minerals > 550
         if gateways_or_warp_gate_units_ready >= 2 and should_create_zealot:
             await self.train_unit(ZEALOT, GATEWAY)
             await self.warp_unit(ZEALOT, WARPGATE)
