@@ -10,14 +10,17 @@ class Soldados():
          await self.bot.do(unit.attack(target))
     
     async def move_and_attack(self, unit_type):
-         for soldier in self.bot.units(unit_type).ready:
-                has_targets = self.bot.cached_known_enemy_units or self.bot.cached_known_enemy_structures
-                if has_targets:
-                    targets = (self.bot.cached_known_enemy_units | self.bot.cached_known_enemy_structures).filter(lambda unit: unit.can_be_attacked)
-                    target = targets.closest_to(soldier)
-                    await self.attack(soldier, target)
+        has_targets = self.bot.cached_known_enemy_units or self.bot.cached_known_enemy_structures
+        for soldier in self.bot.units(unit_type).ready:
+            if has_targets:
+                enemy_units = self.bot.cached_known_enemy_units.filter(lambda unit: unit.can_be_attacked)
+                enemy_struct = self.bot.cached_known_enemy_structures.filter(lambda unit: unit.can_be_attacked)
+                if enemy_units:
+                    await self.attack(soldier, enemy_units.first())
                 else:
-                    await self.attack(soldier, self.bot.enemy_start_locations[0])
+                    await self.attack(soldier, enemy_struct.first())
+            else:
+                await self.attack(soldier, self.bot.enemy_start_locations[0])
     
     async def defend(self, unit_type):
         for soldier in self.bot.units(unit_type).ready:
@@ -54,7 +57,9 @@ class Soldados():
 
     async def should_attack(self):
         bot = self.bot
-        army_ready = (bot.units(STALKER).ready.amount >= 20 and bot.units(ZEALOT).ready.amount >= 20) or bot.units(ZEALOT).ready.amount > 40
+        sum_of_troops = bot.units(STALKER).ready.amount + bot.units(ZEALOT).ready.amount
+
+        army_ready = sum_of_troops > 30
         army_ready = army_ready and bot.units(MOTHERSHIP).ready.amount >= 1
 
         # Ter pelo menos todas as pequisas de lv 1 e a de dano de lv 2
@@ -63,10 +68,10 @@ class Soldados():
                             and await bot.has_upgrade(FORGERESEARCH_PROTOSSSHIELDSLEVEL2))
 
         # Caso a gente tenha começado o ataque, ir até o fim (ou quse isso)
-        focus_on_attack = bot.units(STALKER).ready.amount > 0 and bot.units(ZEALOT).ready.amount > 0 and self.bot.attack_in_course
+        focus_on_attack = sum_of_troops > 0 and self.bot.attack_in_course
 
         # Temos que dar prioridade a defesa caso nossa base esteja sob ataque
-        return ((updates_ready and army_ready) or focus_on_attack) and await self.are_we_under_attack(False)
+        return ((updates_ready and army_ready) or focus_on_attack) and not await self.are_we_under_attack(False)
 
     async def do_work(self, iteration):
         # Atacando caso o batalhão esteja pronto, defendendo caso contrário
