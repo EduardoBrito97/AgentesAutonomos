@@ -2,26 +2,31 @@
 * Oraculo.py = responsável por treinamentos (train()), transdobras (warp_in()) e pesquisas (upgrade)
 * Trabalhadores.py = responsável por construções (build()) e captação de recursos (gather()/distribute_workers())
 * Soldados.py = responsável por ataque e defesa
-* Observadores.py = reponsável por controlar os Observers (scouts)
 * ProtossBot.py = script principal para rodar o bot
 
 ## Estratégia
 * Estruturas
-    1. Construir 4 Gateways
-    2. Enquanto constrói os Gateways, construir um Cybernetics Core
-    3. Usar o Cybernatics Core para fazer a pesquisa para disponibilizar o Warp Gate
-    4. Transdobrar os Gateways em Warp Gates
-    5. Construir 1 Forge
-    6. Realizar as pesquisas de nível 1 da Forge
-    7. Enquanto faz as pesquisas, constrói Stargate
-    8. Após o Stargate, constrói Fleetbeacon
+    1. Expandir para até 3 Nexus
+    2. Construir 4 Gateways
+    3. Enquanto constrói os Gateways, construir um Cybernetics Core
+    4. Usar o Cybernatics Core para fazer a pesquisa para disponibilizar o Warp Gate
+    5. Transdobrar os Gateways em Warp Gates
+    6. Construir 1 Forge
+    7. Realizar as pesquisas de nível 1 da Forge
+    8. Enquanto faz as pesquisas, constrói Stargate
+    9. Após o Stargate, constrói Fleetbeacon
+    10. Construir até 7 Gateways/Warp Gates
+    11. Depois de construir tudo, construir Photo Cannons para defesa
+    12. Caso acabe os minérios próximos do nexus
 * Tropas
-    1. Produzir Probes até completar o máximo de 16 do Nexus
+    1. Produzir Probes até completar o máximo de 16 por Nexus (até chegar em um máximo de 36)
     2. Usar os Probes para coletar recursos, focando em Minerals no começo e Gas no meio termo
     3. Transdobrar Zealots e Stalkers assim que possível
     4. Assim que possível, transdobrar a Mothership
-    5. Atacar se tiver ( (> 5 Zealots e > 5 Stalkers) ou > 10 Zealots) e 1 Mothership e Todas as pesquisas Nv. 1 da Forge
+    5. Atacar se tiver > 30 tropas e 1 Mothership e Todas as pesquisas Nv. 1 da Forge + as Pesquisas de nv. 2 de dano e defesa
     6. Ao iniciar o ataque, um Probe vai seguir o batalhão de ataque para construir um Pylon de proxy, onde os Warpgates farão as transdobras para perto desse Pylon, pra melhorar o ataque.
+    7. A ordem de ataque é -> Local de início do inimigo -> Expansões possíveis (ordenadas em menor distância do spawn do inimigo) -> Local de início do jogador
+    8. Caso o jogador seja atacado enquanto está realizando o ataque, a tropa deve voltar para defender
 
 ## Lista 1 - Início
 1. Quais os aspectos mais importantes da mecânica do jogo?
