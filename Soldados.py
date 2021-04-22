@@ -48,7 +48,7 @@ class Soldados():
             nexus_amount = self.bot.units(NEXUS).amount
 
             # A gente dá prioridade a quem está atacando a base da gente
-            if await self.are_we_under_attack(True):
+            if await self.are_we_under_attack():
                 position_to_stand = self.bot.known_enemy_units.closest_to(self.bot.start_location).position
             else:
                 closest_nexus = self.bot.units(NEXUS).closest_to(self.bot.enemy_start_locations[0])
@@ -59,11 +59,10 @@ class Soldados():
 
             await self.attack(soldier, position_to_stand)
 
-    async def are_we_under_attack(self, include_units):
-        are_we_under_attack = self.bot.alert(Alert.BuildingUnderAttack) 
-        if include_units:
-            are_we_under_attack = are_we_under_attack or self.bot.alert(Alert.UnitUnderAttack)
-        return are_we_under_attack
+    async def are_we_under_attack(self):
+        nexus = self.bot.units(NEXUS).closest_to(self.bot.enemy_start_locations[0])
+        nearby_enemies = self.bot.known_enemy_units.not_structure.filter(lambda unit: not unit.is_flying).closer_than(30, nexus)
+        return nearby_enemies.amount > 2
 
     async def attack_started(self):
         await self.bot.call_for_attack()
@@ -92,7 +91,7 @@ class Soldados():
         focus_on_attack = sum_of_troops > 0 and self.bot.attack_in_course
 
         # Temos que dar prioridade a defesa caso nossa base esteja sob ataque
-        return ((updates_ready and army_ready) or focus_on_attack) and not await self.are_we_under_attack(False)
+        return ((updates_ready and army_ready) or focus_on_attack) and not await self.are_we_under_attack()
 
     async def do_work(self, iteration):
         # Atacando caso o batalhão esteja pronto, defendendo caso contrário
