@@ -51,8 +51,8 @@ class Oraculo():
                 await self.do(worker.attack(self.enemy_start_locations[0]))
             return
 
-        # 16 Probes por Nexus
-        if bot.workers.amount < bot.units(NEXUS).amount*16 and nexus.is_idle and bot.can_afford(PROBE):
+        # 16 Probes por Nexus, no máximo 40
+        if bot.workers.amount < bot.units(NEXUS).amount*16 and bot.workers.amount < 36 and nexus.is_idle and bot.can_afford(PROBE):
             await bot.do(nexus.train(PROBE))
             return
 

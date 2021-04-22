@@ -91,7 +91,7 @@ class Trabalhadores():
                 for mineral in self.bot.state.mineral_field
                 if any(mineral.distance_to(base) <= 8 for base in self.bot.townhalls.ready)
             ]
-        desired_num_of_minerals = self.bot.units(NEXUS).amount * 5
+        desired_num_of_minerals = self.bot.units(NEXUS).amount * 2
         if (self.bot.townhalls.ready.amount + self.bot.already_pending(NEXUS) < 3 or len(all_minerals_near_base) < desired_num_of_minerals) and self.bot.can_afford(NEXUS):
             await self.bot.expand_now()
             return True
@@ -173,7 +173,7 @@ class Trabalhadores():
             return
 
         # Por fim, se a gente tem recurso sobrando, taca canhão pra defesa
-        if bot.units(PHOTONCANNON).ready.amount >= 3 and self.bot.minerals > 1000 and self.bot.vespene > 800:
+        if bot.units(PHOTONCANNON).ready.amount >= 3 and self.bot.minerals > 1500 and self.bot.vespene > 1000 and bot.units(PHOTONCANNON).ready.amount < 8:
             nexus = bot.units(NEXUS).closest_to(bot.enemy_start_locations[0])
             if nexus and bot.can_afford(PHOTONCANNON):
                 pos = await self.find_place_to_build(PHOTONCANNON)

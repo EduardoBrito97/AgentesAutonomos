@@ -5,6 +5,23 @@ from sc2.data import Alert
 class Soldados():
     def __init__(self, protoss_bot):
         self.bot = protoss_bot
+        self.start_location_cleaned = False
+        self.attack_targets_index = 0
+        
+        # Temos uma lista de alvos para quando formos atacar
+        self.attack_targets = []
+
+        # Começamos pelo local de início do inimigo
+        self.attack_targets.append(protoss_bot.enemy_start_locations[0])
+        
+        # Depois vamos atrás de todas as expansões possíveis no jogo, em ordem de distância do inimigo
+        expansions = list(protoss_bot.expansion_locations.keys())
+        expansions = sorted(expansions, key = lambda x: x.distance_to(protoss_bot.enemy_start_locations[0]))
+        for expansion in expansions:
+            self.attack_targets.append(expansion)
+        
+        # Por fim, voltamos ao nosso lugar (se não tivermos ganho ou perdido até aqui o jogo tá bugado, pq significa que o inimigo não tá em canto nenhum)
+        self.attack_targets.append(protoss_bot.start_location)
 
     async def attack(self, unit, target):
          await self.bot.do(unit.attack(target))
@@ -20,7 +37,11 @@ class Soldados():
                 else:
                     await self.attack(soldier, enemy_struct.first())
             else:
-                await self.attack(soldier, self.bot.enemy_start_locations[0])
+                distance_to_enemy_start = self.attack_targets[self.attack_targets_index].distance_to(soldier)
+                if distance_to_enemy_start > 3:
+                    await self.attack(soldier, self.attack_targets[self.attack_targets_index])
+                elif self.attack_targets_index < len(self.attack_targets) - 1:
+                    self.attack_targets_index += 1
     
     async def defend(self, unit_type):
         for soldier in self.bot.units(unit_type).ready:
