@@ -92,7 +92,7 @@ class Trabalhadores():
                 if any(mineral.distance_to(base) <= 8 for base in self.bot.townhalls.ready)
             ]
         desired_num_of_minerals = self.bot.units(NEXUS).amount * 5
-        if (self.bot.townhalls.ready.amount + self.bot.already_pending(NEXUS) < 2 or len(all_minerals_near_base) < desired_num_of_minerals) and self.bot.can_afford(NEXUS):
+        if (self.bot.townhalls.ready.amount + self.bot.already_pending(NEXUS) < 3 or len(all_minerals_near_base) < desired_num_of_minerals) and self.bot.can_afford(NEXUS):
             await self.bot.expand_now()
             return True
         return False
@@ -155,12 +155,6 @@ class Trabalhadores():
             await self.build_structure(GATEWAY)
             return
 
-        # Depois de construir TUDO, a gente expande pra poder pegar mais recurso
-        # Precisamos expandir pra ter pelo menos dois nexus
-        if bot.townhalls.ready.amount + bot.already_pending(NEXUS) < 3 and bot.can_afford(NEXUS):
-            await bot.expand_now()
-            return
-
         # Agora construimos mais alguns Gateways para podermos produzir mais tropas
         if gateways_or_warp_gate_units < 7 and bot.units(PYLON).ready.amount > 0 :
             await self.build_structure(GATEWAY)
@@ -179,8 +173,8 @@ class Trabalhadores():
             return
 
         # Por fim, se a gente tem recurso sobrando, taca canhão pra defesa
-        if self.bot.minerals > 1000 and self.bot.vespene > 800:
+        if bot.units(PHOTONCANNON).ready.amount >= 3 and self.bot.minerals > 1000 and self.bot.vespene > 800:
             nexus = bot.units(NEXUS).closest_to(bot.enemy_start_locations[0])
             if nexus and bot.can_afford(PHOTONCANNON):
-                pos = self.find_place_to_build(PHOTONCANNON)
+                pos = await self.find_place_to_build(PHOTONCANNON)
                 await bot.build(PHOTONCANNON, near = pos)
