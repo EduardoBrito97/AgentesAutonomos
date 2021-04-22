@@ -84,6 +84,18 @@ class Trabalhadores():
                 await self.bot.build(PYLON, near = worker.position)
             else:
                 await self.bot.do(worker.move(soldier_to_follow.position.towards(self.bot.start_location, 9)))
+        
+    async def expand_if_needed(self):
+        all_minerals_near_base = [
+                mineral
+                for mineral in self.bot.state.mineral_field
+                if any(mineral.distance_to(base) <= 8 for base in self.bot.townhalls.ready)
+            ]
+        desired_num_of_minerals = self.bot.units(NEXUS).amount * 5
+        if (self.bot.townhalls.ready.amount + self.bot.already_pending(NEXUS) < 2 or len(all_minerals_near_base) < desired_num_of_minerals) and self.bot.can_afford(NEXUS):
+            await self.bot.expand_now()
+            return True
+        return False
 
     async def do_work(self, iteration):
         bot = self.bot
@@ -93,9 +105,9 @@ class Trabalhadores():
         elif iteration % 20 == 0:
             await self.bot.distribute_workers(1000)
 
-        # Precisamos expandir pra ter pelo menos dois nexus
-        if bot.townhalls.ready.amount + bot.already_pending(NEXUS) < 2 and bot.can_afford(NEXUS):
-            await bot.expand_now()
+        # Precisamos expandir pra ter pelo menos dois nexus (e mais quanto necessário esteja acabando os recursos)
+        if await self.expand_if_needed():
+            return
 
         # Caso a gente já tenha começado o ataque, criar um Pylon pra gente conseguir produzir unidade perto do inimigo
         if bot.attack_in_course and iteration % 5:
@@ -164,3 +176,11 @@ class Trabalhadores():
         # Depois de construir tudo, a gente precisa de mais população
         if bot.supply_left < 8 and bot.units(PYLON).amount - bot.units(PYLON).ready.amount < 3 and bot.units(PHOTONCANNON).ready.amount >= 3 and bot.supply_cap < 200:
             await self.build_structure(PYLON)
+            return
+
+        # Por fim, se a gente tem recurso sobrando, taca canhão pra defesa
+        if self.bot.minerals > 1000 and self.bot.vespene > 800:
+            nexus = bot.units(NEXUS).closest_to(bot.enemy_start_locations[0])
+            if nexus and bot.can_afford(PHOTONCANNON):
+                pos = self.find_place_to_build(PHOTONCANNON)
+                await bot.build(PHOTONCANNON, near = pos)
