@@ -1,6 +1,5 @@
 import random
 from sc2.constants import *
-from sc2.data import Alert
 
 class Soldados():
     def __init__(self, protoss_bot):

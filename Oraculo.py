@@ -52,7 +52,7 @@ class Oraculo():
             return
 
         # 16 Probes por Nexus, no máximo 40
-        if bot.workers.amount < bot.units(NEXUS).amount*16 and bot.workers.amount < 36 and nexus.is_idle and bot.can_afford(PROBE):
+        if bot.workers.amount < bot.units(NEXUS).amount*16 and bot.workers.amount < 36 and nexus.is_idle and bot.can_afford(PROBE) and not self.bot.save_mineral:
             await bot.do(nexus.train(PROBE))
             return
 
@@ -90,7 +90,7 @@ class Oraculo():
             await self.bot.set_save_gas(True)
 
         # Criando a Mothership
-        if bot.units(FLEETBEACON).ready.exists and bot.can_afford(MOTHERSHIP) and not bot.units(MOTHERSHIP) and not bot.already_pending(MOTHERSHIP):
+        if bot.units(FLEETBEACON).ready.exists and bot.can_afford(MOTHERSHIP) and not bot.units(MOTHERSHIP) and not bot.already_pending(MOTHERSHIP) and not self.bot.save_mineral:
             await bot.do(nexus.train(MOTHERSHIP))
             await self.bot.set_save_gas(False)
             return
@@ -98,7 +98,7 @@ class Oraculo():
         gateways_or_warp_gate_units_ready = bot.units(GATEWAY).ready.amount + bot.units(WARPGATE).ready.amount
         
         # Damos prioridade aos Stalkers que são mais fortes, mas custam mais, porém, caso pudermos construir a Mothership, dar prioridade a ela
-        if gateways_or_warp_gate_units_ready >= 2 and bot.units(STALKER).ready.amount <= 40 and self.bot.can_afford(STALKER) and self.warpgate_started and not self.bot.save_gas:
+        if gateways_or_warp_gate_units_ready >= 2 and bot.units(STALKER).ready.amount <= 40 and self.bot.can_afford(STALKER) and self.warpgate_started and not self.bot.save_gas and not self.bot.save_mineral:
             await self.train_unit(STALKER, GATEWAY)
             await self.warp_unit(STALKER, WARPGATE)
             return
@@ -106,6 +106,6 @@ class Oraculo():
         # Já começamos a treinar Zealots, que são a base de nossa armada
         # Como Zealot usa só mineral, pode ser que tenhamos muito mineral e pouco gas
         should_create_zealot = bot.units(ZEALOT).ready.amount <= 40 or bot.minerals > 550
-        if gateways_or_warp_gate_units_ready >= 2 and should_create_zealot:
+        if gateways_or_warp_gate_units_ready >= 2 and should_create_zealot and not self.bot.save_mineral:
             await self.train_unit(ZEALOT, GATEWAY)
             await self.warp_unit(ZEALOT, WARPGATE)

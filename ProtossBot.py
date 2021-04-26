@@ -33,6 +33,9 @@ class ProtossBot(sc2.BotAI):
     async def set_save_gas(self, save_gas):
         self.save_gas = save_gas
 
+    async def set_save_mineral(self, save_mineral):
+        self.save_mineral = save_mineral
+
     async def on_step(self, iteration):
         if iteration == 0:
             await self.chat_send("GL HF")
@@ -41,6 +44,7 @@ class ProtossBot(sc2.BotAI):
             self.soldados = Soldados(self)
             self.attack_in_course = False
             self.save_gas = False
+            self.save_mineral = False
 
         try:
             await self.oraculo.do_work()

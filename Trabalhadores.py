@@ -92,8 +92,13 @@ class Trabalhadores():
                 if any(mineral.distance_to(base) <= 8 for base in self.bot.townhalls.ready)
             ]
         desired_num_of_minerals = self.bot.units(NEXUS).amount * 2
+
+        if len(all_minerals_near_base) < desired_num_of_minerals:
+            await self.bot.set_save_mineral(True)
+
         if (self.bot.townhalls.ready.amount + self.bot.already_pending(NEXUS) < 3 or len(all_minerals_near_base) < desired_num_of_minerals) and self.bot.can_afford(NEXUS):
             await self.bot.expand_now()
+            await self.bot.set_save_mineral(False)
             return True
         return False
 
