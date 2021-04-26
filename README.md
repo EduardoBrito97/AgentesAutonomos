@@ -16,8 +16,10 @@
     8. Enquanto faz as pesquisas, constrói Stargate
     9. Após o Stargate, constrói Fleetbeacon
     10. Construir até 7 Gateways/Warp Gates
-    11. Depois de construir tudo, construir Photo Cannons para defesa
-    12. Caso acabe os minérios próximos do nexus
+    11. Construir o Twilight Council quando terminar de fazer as pesquisas de lv 1
+    12. Depois de construir tudo, construir Photo Cannons para defesa
+    13. Caso acabe os minérios próximos do nexus, expandir de novo a base
+    
 * Tropas
     1. Produzir Probes até completar o máximo de 16 por Nexus (até chegar em um máximo de 36)
     2. Usar os Probes para coletar recursos, focando em Minerals no começo e Gas no meio termo
