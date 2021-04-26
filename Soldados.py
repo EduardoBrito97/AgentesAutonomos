@@ -27,6 +27,7 @@ class Soldados():
     
     async def move_and_attack(self, unit_type):
         has_targets = self.bot.cached_known_enemy_units or self.bot.cached_known_enemy_structures
+        num_of_soldiers_without_targets = 0
         for soldier in self.bot.units(unit_type).ready:
             if has_targets:
                 enemy_units = self.bot.cached_known_enemy_units.filter(lambda unit: unit.can_be_attacked)
@@ -39,29 +40,33 @@ class Soldados():
                 distance_to_enemy_start = self.attack_targets[self.attack_targets_index].distance_to(soldier)
                 if distance_to_enemy_start > 3:
                     await self.attack(soldier, self.attack_targets[self.attack_targets_index])
-                elif self.attack_targets_index < len(self.attack_targets) - 1:
-                    self.attack_targets_index += 1
+                else:
+                    num_of_soldiers_without_targets += 1
+                
+        if self.attack_targets_index < len(self.attack_targets) - 1 and num_of_soldiers_without_targets > 6:
+                self.attack_targets_index += 1
     
     async def defend(self, unit_type):
-        for soldier in self.bot.units(unit_type).ready:
-            nexus_amount = self.bot.units(NEXUS).amount
+        nexus_amount = self.bot.units(NEXUS).amount
+        enemy_units = self.bot.known_enemy_units.filter(lambda unit: unit.can_be_attacked)
+        nexus_closest_to_enemy = self.bot.units(NEXUS).closest_to(self.bot.enemy_start_locations[0])
 
+        for soldier in self.bot.units(unit_type).ready:
             # A gente dá prioridade a quem está atacando a base da gente
             if await self.are_we_under_attack():
-                position_to_stand = self.bot.known_enemy_units.closest_to(self.bot.start_location).position
+                closest_enemy = enemy_units.closest_to(nexus_closest_to_enemy)
+                await self.attack(soldier, closest_enemy)
             else:
-                closest_nexus = self.bot.units(NEXUS).closest_to(self.bot.enemy_start_locations[0])
-                position_to_stand = closest_nexus.position.towards(self.bot.game_info.map_center, 8)
-            
+                position_to_stand = nexus_closest_to_enemy.position.towards(self.bot.game_info.map_center, 8)
                 if nexus_amount > 2:
-                    position_to_stand = closest_nexus.position.towards(self.bot.start_location, 8)
+                    position_to_stand = nexus_closest_to_enemy.position.towards(self.bot.start_location, 8)
 
-            await self.attack(soldier, position_to_stand)
+                await self.attack(soldier, position_to_stand)
 
     async def are_we_under_attack(self):
         for nexus in self.bot.units(NEXUS):
-            nearby_enemies = self.bot.known_enemy_units.not_structure.filter(lambda unit: not unit.is_flying).closer_than(30, nexus)
-            if nearby_enemies.amount > 1:
+            nearby_enemies = self.bot.known_enemy_units.not_structure.closer_than(30, nexus)
+            if nearby_enemies.amount >= 1:
                 return True
         return False
 
