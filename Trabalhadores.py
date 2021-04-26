@@ -35,7 +35,7 @@ class Trabalhadores():
 
         pos = await self.find_place_to_build(PYLON)
         closest_structure_distance = self.bot.units.filter(lambda u: u.is_structure).closest_to(pos).distance_to(pos)
-        if should_create_pylon and closest_structure_distance > 3:
+        if should_create_pylon and closest_structure_distance > 4:
             await bot.build(PYLON, near = pos)
 
     async def find_place_to_build(self, structure_to_build):
@@ -60,7 +60,7 @@ class Trabalhadores():
         if not self.bot.already_pending(structure):
             pos = await self.find_place_to_build(structure)
             closest_structure_distance = self.bot.units.filter(lambda u: u.is_structure).closest_to(pos).distance_to(pos)
-            if self.bot.can_afford(structure) and closest_structure_distance > 3:
+            if self.bot.can_afford(structure) and closest_structure_distance > 4:
                 await self.bot.build(structure, near = pos)
                 return True
         return False
@@ -89,16 +89,17 @@ class Trabalhadores():
         all_minerals_near_base = [
                 mineral
                 for mineral in self.bot.state.mineral_field
-                if any(mineral.distance_to(base) <= 8 for base in self.bot.townhalls.ready)
+                if any(mineral.distance_to(base) <= 8 for base in self.bot.units(NEXUS))
             ]
-        desired_num_of_minerals = self.bot.units(NEXUS).amount * 2
+        desired_num_of_minerals = self.bot.units(NEXUS).amount * 3
 
         if len(all_minerals_near_base) < desired_num_of_minerals:
             await self.bot.set_save_mineral(True)
-
-        if (self.bot.townhalls.ready.amount + self.bot.already_pending(NEXUS) < 3 or len(all_minerals_near_base) < desired_num_of_minerals) and self.bot.can_afford(NEXUS):
-            await self.bot.expand_now()
+        else:
             await self.bot.set_save_mineral(False)
+
+        if (self.bot.townhalls.ready.amount + self.bot.already_pending(NEXUS) < 3 or len(all_minerals_near_base) < desired_num_of_minerals) and self.bot.can_afford(NEXUS) and not self.bot.already_pending(NEXUS):
+            await self.bot.expand_now()
             return True
         return False
 
@@ -182,4 +183,6 @@ class Trabalhadores():
             nexus = bot.units(NEXUS).closest_to(bot.enemy_start_locations[0])
             if nexus and bot.can_afford(PHOTONCANNON):
                 pos = await self.find_place_to_build(PHOTONCANNON)
-                await bot.build(PHOTONCANNON, near = pos)
+                closest_structure_distance = bot.units.filter(lambda u: u.is_structure).closest_to(pos).distance_to(pos)
+                if closest_structure_distance > 4:
+                    await bot.build(PHOTONCANNON, near = pos)

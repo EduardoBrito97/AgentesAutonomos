@@ -59,9 +59,11 @@ class Soldados():
             await self.attack(soldier, position_to_stand)
 
     async def are_we_under_attack(self):
-        nexus = self.bot.units(NEXUS).closest_to(self.bot.enemy_start_locations[0])
-        nearby_enemies = self.bot.known_enemy_units.not_structure.filter(lambda unit: not unit.is_flying).closer_than(30, nexus)
-        return nearby_enemies.amount > 2
+        for nexus in self.bot.units(NEXUS):
+            nearby_enemies = self.bot.known_enemy_units.not_structure.filter(lambda unit: not unit.is_flying).closer_than(30, nexus)
+            if nearby_enemies.amount > 1:
+                return True
+        return False
 
     async def attack_started(self):
         await self.bot.call_for_attack()
