@@ -35,7 +35,7 @@ class Trabalhadores():
 
         pos = await self.find_place_to_build(PYLON)
         closest_structure_distance = self.bot.units.filter(lambda u: u.is_structure).closest_to(pos).distance_to(pos)
-        if should_create_pylon and closest_structure_distance > 4:
+        if should_create_pylon and closest_structure_distance > 3:
             await bot.build(PYLON, near = pos)
 
     async def find_place_to_build(self, structure_to_build):
@@ -166,11 +166,13 @@ class Trabalhadores():
             await self.build_structure(GATEWAY)
             return
 
-        # Por fim, precisamos de defesas
-        if gateways_or_warp_gate_units_ready >= 7 and bot.units(PHOTONCANNON).ready.amount < 3 and not bot.already_pending(PHOTONCANNON):
+        # Por fim, precisamos de mais defesas
+        if gateways_or_warp_gate_units_ready >= 7 and bot.units(PHOTONCANNON).ready.amount < 4 and not bot.already_pending(PHOTONCANNON):
             nexus = bot.units(NEXUS).closest_to(bot.enemy_start_locations[0])
-            if nexus and bot.can_afford(PHOTONCANNON):
-                await bot.build(PHOTONCANNON, near = nexus.position.towards_with_random_angle(bot.enemy_start_locations[0], 6).to2.random_on_distance(4))
+            pos = nexus.position.towards_with_random_angle(bot.enemy_start_locations[0], 6).to2.random_on_distance(4)
+            closest_structure_distance = bot.units.filter(lambda u: u.is_structure).closest_to(pos).distance_to(pos)
+            if bot.can_afford(PHOTONCANNON) and closest_structure_distance > 3:
+                await bot.build(PHOTONCANNON, near = pos)
                 return
 
         # Depois de construir tudo, a gente precisa de mais população
