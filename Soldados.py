@@ -34,7 +34,7 @@ class Soldados():
         num_of_soldiers_without_targets = 0
         for soldier in self.bot.units(unit_type).ready:
             if has_targets:
-                targets = (self.enemy_units | self.enemy_structures).filter(lambda unit: unit.can_be_attacked)
+                targets = (self.bot.enemy_units | self.bot.enemy_structures).filter(lambda unit: unit.can_be_attacked)
                 if targets:
                     await self.attack(soldier, targets.closest_to(soldier))
             else:
@@ -44,7 +44,7 @@ class Soldados():
                 else:
                     num_of_soldiers_without_targets += 1
                 
-        if self.attack_targets_index < len(self.attack_targets) - 1 and num_of_soldiers_without_targets > 6:
+        if self.attack_targets_index < len(self.attack_targets) - 1 and num_of_soldiers_without_targets > 10:
                 self.attack_targets_index += 1
     
     async def defend(self, unit_type):
@@ -67,7 +67,7 @@ class Soldados():
     async def are_we_under_attack(self):
         for nexus in self.bot.townhalls:
             nearby_enemies = self.bot.enemy_units.closer_than(30, nexus)
-            if nearby_enemies.amount >= 1:
+            if nearby_enemies.amount >= 2:
                 return True
         return False
 

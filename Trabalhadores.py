@@ -80,14 +80,14 @@ class Trabalhadores():
                 proxy_built = True
 
         if self.bot.structures(PROBE).ready and not proxy_built:
-            worker = self.bot.structures(PROBE).ready.closest_to(enemy_location)
+            worker = self.bot.units(PROBE).ready.closest_to(enemy_location)
             distance_to_enemy = worker.distance_to(enemy_location)
             soldier_to_follow = (self.bot.units(ZEALOT).ready | self.bot.units(STALKER).ready).closest_to(enemy_location)
 
             if distance_to_enemy <= 70 and self.bot.can_afford(PYLON) and not self.bot.already_pending(PYLON):
                 worker.build(PYLON, worker.position)
             else:
-                worker.attack(soldier_to_follow.position.towards(self.bot.start_location, 9))
+                worker.move(soldier_to_follow.position.towards(self.bot.start_location, 9))
         
     async def expand_if_needed(self):
         all_minerals_near_base = [
