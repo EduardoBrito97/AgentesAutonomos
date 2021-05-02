@@ -79,7 +79,7 @@ class Trabalhadores():
             if distance_to_enemy <= 80:
                 proxy_built = True
 
-        if self.bot.structures(PROBE).ready and not proxy_built:
+        if self.bot.units(PROBE).ready and not proxy_built:
             worker = self.bot.units(PROBE).ready.closest_to(enemy_location)
             distance_to_enemy = worker.distance_to(enemy_location)
             soldier_to_follow = (self.bot.units(ZEALOT).ready | self.bot.units(STALKER).ready).closest_to(enemy_location)
