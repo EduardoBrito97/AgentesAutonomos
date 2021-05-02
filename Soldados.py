@@ -1,3 +1,7 @@
+import sys, os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
+
 import random
 from sc2.constants import *
 
@@ -14,7 +18,7 @@ class Soldados():
         self.attack_targets.append(protoss_bot.enemy_start_locations[0])
         
         # Depois vamos atrás de todas as expansões possíveis no jogo, em ordem de distância do inimigo
-        expansions = list(protoss_bot.expansion_locations.keys())
+        expansions = protoss_bot.expansion_locations_list
         expansions = sorted(expansions, key = lambda x: x.distance_to(protoss_bot.enemy_start_locations[0]))
         for expansion in expansions:
             self.attack_targets.append(expansion)
@@ -23,19 +27,16 @@ class Soldados():
         self.attack_targets.append(protoss_bot.start_location)
 
     async def attack(self, unit, target):
-         await self.bot.do(unit.attack(target))
+        unit.attack(target)
     
     async def move_and_attack(self, unit_type):
-        has_targets = self.bot.cached_known_enemy_units or self.bot.cached_known_enemy_structures
+        has_targets = (self.bot.enemy_units | self.bot.enemy_structures)
         num_of_soldiers_without_targets = 0
         for soldier in self.bot.units(unit_type).ready:
             if has_targets:
-                enemy_units = self.bot.cached_known_enemy_units.filter(lambda unit: unit.can_be_attacked)
-                enemy_struct = self.bot.cached_known_enemy_structures.filter(lambda unit: unit.can_be_attacked)
-                if enemy_units:
-                    await self.attack(soldier, enemy_units.first())
-                else:
-                    await self.attack(soldier, enemy_struct.first())
+                targets = (self.enemy_units | self.enemy_structures).filter(lambda unit: unit.can_be_attacked)
+                if targets:
+                    await self.attack(soldier, targets.closest_to(soldier))
             else:
                 distance_to_enemy_start = self.attack_targets[self.attack_targets_index].distance_to(soldier)
                 if distance_to_enemy_start > 3:
@@ -47,9 +48,9 @@ class Soldados():
                 self.attack_targets_index += 1
     
     async def defend(self, unit_type):
-        nexus_amount = self.bot.units(NEXUS).amount
-        enemy_units = self.bot.known_enemy_units.filter(lambda unit: unit.can_be_attacked)
-        nexus_closest_to_enemy = self.bot.units(NEXUS).closest_to(self.bot.enemy_start_locations[0])
+        nexus_amount = self.bot.townhalls.amount
+        enemy_units = self.bot.enemy_units.filter(lambda unit: unit.can_be_attacked)
+        nexus_closest_to_enemy = self.bot.townhalls.closest_to(self.bot.enemy_start_locations[0])
 
         for soldier in self.bot.units(unit_type).ready:
             # A gente dá prioridade a quem está atacando a base da gente
@@ -64,8 +65,8 @@ class Soldados():
                 await self.attack(soldier, position_to_stand)
 
     async def are_we_under_attack(self):
-        for nexus in self.bot.units(NEXUS):
-            nearby_enemies = self.bot.known_enemy_units.not_structure.closer_than(30, nexus)
+        for nexus in self.bot.townhalls:
+            nearby_enemies = self.bot.enemy_units.closer_than(30, nexus)
             if nearby_enemies.amount >= 1:
                 return True
         return False
